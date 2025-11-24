@@ -1,4 +1,6 @@
 ---
+import '../styles/global.css';
+
 interface Props {
   title: string;
   description?: string;
@@ -89,8 +91,6 @@ const socialImageURL = new URL(image, Astro.site);
       gtag('js', new Date());
       gtag('config', 'G-4K1309HJN0');
     </script>
-
-    <link rel="stylesheet" href="/src/styles/global.css" />
   </head>
   <body>
     <header>
