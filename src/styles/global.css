@@ -37,12 +37,14 @@ html {
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-gutter: stable;
 }
 
 body {
   max-width: 800px;
   margin: 0 auto;
   padding: 1rem;
+  overflow-wrap: break-word;
 }
 
 /* Header & Navigation */
