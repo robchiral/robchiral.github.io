@@ -1,0 +1,37 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const posts = [
+  {
+    title: 'My Step 2 experience',
+    slug: 'step2',
+    date: '2025-10-03',
+    excerpt: 'How I scored a 275 on Step 2 before finishing clerkships.'
+  },
+  {
+    title: 'My Step 1 experience',
+    slug: 'step1',
+    date: '2023-04-30',
+    excerpt: 'How I passed Step 1 after 8 months of medical school using only Anking and UWorld.'
+  }
+];
+---
+
+<Layout
+  title="Blog - Robert Chen"
+  description="My perspective on medicine."
+>
+  <h1>Blog</h1>
+
+  <ul class="post-list">
+    {posts.map(post => (
+      <li class="post-item">
+        <h2 class="post-title">
+          <a href={`/blog/${post.slug}`}>{post.title}</a>
+        </h2>
+        <div class="post-meta">{new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+        <p class="post-excerpt">{post.excerpt}</p>
+      </li>
+    ))}
+  </ul>
+</Layout>

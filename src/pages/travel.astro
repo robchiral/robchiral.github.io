@@ -1,0 +1,284 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Travel - Robert Chen"
+  description="A map of places I've been."
+>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin=""/>
+
+  <style>
+    .map-container {
+      height: 600px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      margin: 2rem 0;
+    }
+  </style>
+
+  <style is:global>
+    .custom-popup .leaflet-popup-content-wrapper {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .custom-popup .leaflet-popup-content {
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .custom-popup .leaflet-popup-tip {
+      background: #764ba2;
+    }
+
+    .popup-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .popup-years {
+      font-size: 14px;
+      opacity: 0.95;
+      line-height: 1.6;
+    }
+
+    .popup-home-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.25);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .custom-marker {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 3px solid white;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .custom-marker:hover {
+      transform: scale(1.2);
+    }
+
+    .home-marker {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 3px solid white;
+      animation: pulse 2s infinite;
+      cursor: pointer;
+    }
+
+    .home-marker:hover {
+      transform: scale(1.2);
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .marker-cluster-small,
+    .marker-cluster-medium,
+    .marker-cluster-large {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: 3px solid white;
+    }
+
+    .marker-cluster-small div,
+    .marker-cluster-medium div,
+    .marker-cluster-large div {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+      color: white;
+      font-weight: 700;
+    }
+  </style>
+
+  <h1>Travel</h1>
+  <p>Places I've been and where I'll travel to in the next 6 months.</p>
+
+  <div id="map" class="map-container"></div>
+
+  <script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script is:inline src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <script is:inline>
+    // @ts-ignore
+    const map = L.map('map').setView([20, 0], 2);
+
+    // @ts-ignore
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    }).addTo(map);
+
+    // @ts-ignore
+    const markers = L.markerClusterGroup();
+
+    const cities = [
+      { name: 'New York', coords: [40.7128, -74.0060], years: ['Childhood', '2022-Present'], home: true },
+
+      // Austria
+      { name: 'Innsbruck', coords: [47.2692, 11.4041], years: [2025] },
+      { name: 'Linz', coords: [48.3069, 14.2858], years: [2025] },
+      { name: 'Salzburg', coords: [47.8095, 13.0550], years: [2025] },
+      { name: 'Vienna', coords: [48.2082, 16.3738], years: [2025] },
+
+      // Belgium
+      { name: 'Bruges', coords: [51.2093, 3.2247], years: [2025] },
+      { name: 'Brussels', coords: [50.8503, 4.3517], years: [2025] },
+      { name: 'Ghent', coords: [51.0543, 3.7174], years: [2025] },
+
+      // Canada
+      { name: 'Montreal', coords: [45.5017, -73.5673], years: [2014, 2023, 2026] },
+      { name: 'Ottawa', coords: [45.4215, -75.6972], years: [2014] },
+      { name: 'Quebec City', coords: [46.8139, -71.2080], years: [2014] },
+
+      // China
+      { name: 'Beijing', coords: [39.9042, 116.4074], years: ['Pre-2010'] },
+      { name: 'Hangzhou', coords: [30.2741, 120.1551], years: ['Pre-2010', 2016] },
+      { name: 'Shanghai', coords: [31.2304, 121.4737], years: ['Pre-2010', 2016] },
+
+      // Colombia
+      { name: 'Bogota', coords: [4.7110, -74.0721], years: [2026] },
+
+      // Czechia
+      { name: 'Pilsen', coords: [49.7475, 13.3776], years: [2025] },
+      { name: 'Prague', coords: [50.0755, 14.4378], years: [2025] },
+
+      // Estonia
+      { name: 'Tallinn', coords: [59.4370, 24.7536], years: [2026] },
+
+      // Finland
+      { name: 'Helsinki', coords: [60.1699, 24.9384], years: [2026] },
+      { name: 'Rovaniemi', coords: [66.5039, 25.7294], years: [2026] },
+      { name: 'Tampere', coords: [61.4978, 23.7610], years: [2026] },
+      { name: 'Turku', coords: [60.4518, 22.2666], years: [2026] },
+
+      // France
+      { name: 'Annecy', coords: [45.8992, 6.1294], years: [2025] },
+      { name: 'Avignon', coords: [43.9493, 4.8055], years: [2026] },
+      { name: 'Grenoble', coords: [45.1885, 5.7245], years: [2025] },
+      { name: 'Lyon', coords: [45.7640, 4.8357], years: [2025] },
+      { name: 'Marseille', coords: [43.2965, 5.3698], years: [2026] },
+      { name: 'Nice', coords: [43.7102, 7.2620], years: [2026] },
+      { name: 'Paris', coords: [48.8566, 2.3522], years: [2015, 2026] },
+      { name: 'Strasbourg', coords: [48.5734, 7.7521], years: [2026] },
+
+      // Germany
+      { name: 'Berlin', coords: [52.5200, 13.4050], years: [2015, 2025] },
+      { name: 'Bremen', coords: [53.0793, 8.8017], years: [2024] },
+      { name: 'Cologne', coords: [50.9375, 6.9603], years: [2024] },
+      { name: 'Dresden', coords: [51.0504, 13.7373], years: [2025] },
+      { name: 'Frankfurt', coords: [50.1109, 8.6821], years: [2024] },
+      { name: 'Freiburg', coords: [47.9990, 7.8421], years: [2024] },
+      { name: 'Hamburg', coords: [53.5511, 9.9937], years: [2024] },
+      { name: 'Heidelberg', coords: [49.3988, 8.6724], years: [2024] },
+      { name: 'Lubeck', coords: [53.8655, 10.6866], years: [2024] },
+      { name: 'Munich', coords: [48.1351, 11.5820], years: [2015] },
+      { name: 'Nuremberg', coords: [49.4521, 11.0767], years: [2025] },
+      { name: 'Potsdam', coords: [52.3906, 13.0645], years: [2015] },
+      { name: 'Regensburg', coords: [49.0134, 12.1016], years: [2025] },
+      { name: 'Stuttgart', coords: [48.7758, 9.1829], years: [2024] },
+      { name: 'Wuppertal', coords: [51.2562, 7.1508], years: [2024] },
+
+      // Italy
+      { name: 'Genoa', coords: [44.4056, 8.9463], years: [2026] },
+      { name: 'Milan', coords: [45.4642, 9.1900], years: [2026] },
+
+      // Japan
+      { name: 'Kyoto', coords: [35.0116, 135.7681], years: [2016] },
+      { name: 'Tokyo', coords: [35.6895, 139.6917], years: [2016] },
+
+      // Monaco
+      { name: 'Monaco', coords: [43.7384, 7.4246], years: [2026] },
+
+      // Mexico
+      { name: 'Mexico City', coords: [19.4326, -99.1332], years: [2026] },
+
+      // Slovakia
+      { name: 'Bratislava', coords: [48.1486, 17.1077], years: ['2025'] },
+
+      // Switzerland
+      { name: 'Geneva', coords: [46.2044, 6.1432], years: [2025] },
+
+      // Spain
+      { name: 'Barcelona', coords: [41.3851, 2.1734], years: [2024] },
+      { name: 'Cordoba', coords: [37.8882, -4.7794], years: [2024] },
+      { name: 'Madrid', coords: [40.4168, -3.7038], years: [2024] },
+      { name: 'Seville', coords: [37.3891, -5.9845], years: [2024] },
+
+      // Turkey
+      { name: 'Istanbul', coords: [41.0082, 28.9784], years: [2022] },
+
+      // United Kingdom
+      { name: 'London', coords: [51.5074, -0.1278], years: [2015, 2022, 2025, 2026] },
+    ];
+
+    const defaultIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: `<div class="custom-marker"></div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
+
+    const homeIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: `<div class="home-marker"></div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+
+    cities.forEach(city => {
+      // @ts-ignore
+      const marker = L.marker(city.coords, { icon: city.home ? homeIcon : defaultIcon });
+
+      const yearsText = city.years.length > 0
+        ? city.years.join(', ')
+        : 'Unknown';
+
+      const homeBadge = city.home
+        ? '<div class="popup-home-badge">🏠 Home</div>'
+        : '';
+
+      const popupContent = `
+        <div class="popup-title">${city.name}</div>
+        <div class="popup-years">${yearsText}</div>
+        ${homeBadge}
+      `;
+
+      marker.bindPopup(popupContent, {
+        className: 'custom-popup',
+        closeButton: true,
+        maxWidth: 250
+      });
+
+      markers.addLayer(marker);
+    });
+
+    map.addLayer(markers);
+  </script>
+</Layout>
